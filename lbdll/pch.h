@@ -9,18 +9,6 @@
 
 // add headers that you want to pre-compile here
 #include "framework.h"
-
-
-// image_processing_lib.cpp
-#include <cstdint>
-#include <functional>
-
-// ¬ключаем заголовочный файл WinSocks2 дл€ работы с сокетами
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
-
-// ¬ключаем заголовочный файл stb_image дл€ работы с изображени€ми
-#include "../shared/stb_image.h"
+#include "../shared/lbdll.h"
 
 #endif //PCH_H
