@@ -1,5 +1,5 @@
 #pragma once
-#include "common.h"
+#include "pch.h"
 
 #ifdef LBDLL_EXPORTS
 #define LBDLL_API __declspec(dllexport)
