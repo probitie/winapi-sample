@@ -21,6 +21,6 @@
 #pragma comment(lib, "ws2_32.lib")
 
 // Включаем заголовочный файл stb_image для работы с изображениями
-#include "stb_image.h"
+#include "../shared/stb_image.h"
 
 #endif //PCH_H
