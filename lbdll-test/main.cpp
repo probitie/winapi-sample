@@ -21,8 +21,8 @@ int main()
 	process_image(img, w, h, channels,
 		[](auto& r, auto& g, auto& b)
 		{
-			r += 10;
-			g += 20;
+			r += 10; // as 'r' is 8-bit value it will go round after overflow
+			g += 20; // exactly what's expected
 			b += 30;
 		});
 
