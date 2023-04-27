@@ -1,4 +1,5 @@
-#include "dynlib.h"
+#include "pch.h"
+#include "lbdll.h"
 
 // Реализация функций
 bool send_image(const char* ip_address, uint16_t port, const unsigned char* image_data, int width, int height, int channels) {
