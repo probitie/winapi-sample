@@ -21,9 +21,9 @@ int main()
 	process_image(img, w, h, channels,
 		[](auto& r, auto& g, auto& b)
 		{
-			r += 10; // as 'r' is 8-bit value it will go round after overflow
-			g += 20; // exactly what's expected
-			b += 30;
+			r = 0; // as 'r' is 8-bit value it will go round after overflow
+			g = 0; // exactly what's expected
+			b = 0;
 		});
 
 	// count black pixels
