@@ -28,6 +28,10 @@ int main()
 	int r_h{}, r_w{}, r_channels{}; // r_ means received
 	auto recv_img = receive_image(8888, &r_w, &r_h, &r_channels);
 
+	// wait until the thread closes
+	// (even if it should've been)
+	t1.join();
+
 	LB_ASSERT(memcmp(img, recv_img, w*h) == 0, "sending by localhost failed - resulting image is not equal to the origin");
 
 
@@ -43,6 +47,10 @@ int main()
 
 	// count black pixels
 	const int blacks = count_colored_pixels(img, w, h, channels, 0, 0, 0);
+
+	// prevent memory leaks
+	stbi_image_free(img);
+	img = nullptr;
 
 	std::cout << blacks;
 	return 0;
