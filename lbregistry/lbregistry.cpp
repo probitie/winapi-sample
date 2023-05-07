@@ -1,14 +1,13 @@
-﻿#include "pch.h"
+﻿/**
+ * @file This file is used to test capabilities of registry and tray modules
+ */
+
+#include "pch.h"
+#include "tray_module.h"
+#include "registry_module.h"
 
 
-// Прототипи функцій
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-void AddTrayIcon(HWND hwnd);
-void RemoveTrayIcon(HWND hwnd);
-
-// Глобальні змінні
-HINSTANCE hInst;
-NOTIFYICONDATA nid;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
@@ -52,21 +51,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    TrayWndProc(hWnd, message, wParam, lParam);
+
     switch (message)
     {
     case WM_CREATE:
-        AddTrayIcon(hWnd);
+        TrayAddIcon(hWnd);
         break;
-
-    case WM_APP: // Callback message for tray icon
-        if (lParam == WM_LBUTTONUP)
-        {
-            MessageBox(hWnd, L"Left button clicked on tray icon", L"Tray Icon", MB_OK);
-        }
-        break;
-
     case WM_DESTROY:
-        RemoveTrayIcon(hWnd);
+        TrayRemoveIcon(hWnd);
         PostQuitMessage(0);
         break;
 
@@ -76,21 +69,3 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void AddTrayIcon(HWND hWnd)
-{
-    ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
-
-    nid.cbSize = sizeof(NOTIFYICONDATA);
-    nid.hWnd = hWnd;
-    nid.uID = 1;
-    nid.uFlags = NIF_ICON | NIF_MESSAGE
-        | NIF_TIP;
-    nid.uCallbackMessage = WM_APP;
-    nid.hIcon = LoadIcon(hInst, IDI_APPLICATION);
-    wcscpy_s(nid.szTip, L"Registry Tray App"); Shell_NotifyIcon(NIM_ADD, &nid);
-}
-
-void RemoveTrayIcon(HWND hWnd)
-{
-    Shell_NotifyIcon(NIM_DELETE, &nid);
-}
