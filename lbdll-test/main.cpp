@@ -1,5 +1,5 @@
 #include "../stb_image_lib/stb_image.h"
-#include "../shared/lbdll.h"
+#include "../lbdll/lbdll.h"
 #include <iostream>
 #include <thread>
 

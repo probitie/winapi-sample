@@ -31,5 +31,5 @@ extern "C" {
 
 // линкуем dll если она используется в другом проекте
 #ifndef LBDLL_EXPORTS
-#pragma comment(lib, "lbdll.lib")
+//#pragma comment(lib, "lbdll.lib")
 #endif // LBDLL_EXPORTS
