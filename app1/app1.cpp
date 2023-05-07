@@ -3,7 +3,13 @@
 
 #include "framework.h"
 #include "app1.h"
-#include "../shared/stb_image.h"
+
+// include GDI+
+#include <objidl.h>
+#include <gdiplus.h>
+
+
+#include "../stb_image_lib/stb_image.h"
 
 #define MAX_LOADSTRING 100
 
@@ -18,6 +24,17 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+using namespace Gdiplus;
+
+int width1, height1, channels1;
+unsigned char* data1;
+int width2, height2, channels2;
+unsigned char* data2;
+// Создание GDI+ Bitmap объектов для каждого изображения
+Bitmap* bmp1;
+Bitmap* bmp2;
+
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -27,6 +44,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: Place code here.
+    // Инициализация GDI+
+
+
+    ULONG_PTR gdiplusToken;
+    GdiplusStartupInput gdiplusStartupInput;
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
+
+    // Загрузка изображений с помощью stb_image
+    // Пока что только одно изображение
+    // Так же предполагается что оно находится в папке билда
+    data1 = stbi_load("D:\\files\\wall.jpg", &width1, &height1, &channels1, 0);
+
+	data2 = stbi_load("D:\\files\\wall.jpg", &width2, &height2, &channels2, 0);
+
+    // Создание GDI+ Bitmap объектов для каждого изображения
+    bmp1 = new Bitmap(width1, height1, width1 * channels1, PixelFormat32bppRGB, (BYTE*)data1);
+    bmp2 = new Bitmap(width2, height2, width2 * channels2, PixelFormat32bppRGB, (BYTE*)data2);
+
+    // todo assert pointers are not null
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -53,6 +89,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
+    delete bmp1;
+    delete bmp2;
+    stbi_image_free(data1);
+    stbi_image_free(data2);
+
+    Gdiplus::GdiplusShutdown(gdiplusToken);
     return (int) msg.wParam;
 }
 
@@ -148,6 +190,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: Add any drawing code that uses hdc here...
+
+            // Создайте объект Graphics
+            Gdiplus::Graphics graphics(hdc);
+
+            // Отрисуйте изображения на окне
+            graphics.DrawImage(bmp1, 0, 0);
+            graphics.DrawImage(bmp2, 0, height1);
+
+
             EndPaint(hWnd, &ps);
         }
         break;

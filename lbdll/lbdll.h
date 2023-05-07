@@ -28,8 +28,3 @@ extern "C" {
     LBDLL_API void process_image(unsigned char* image_data, int width, int height, int channels, std::function<void(uint8_t& r, uint8_t& g, uint8_t& b)> process_pixel);
     LBDLL_API int count_colored_pixels(const unsigned char* image_data, int width, int height, int channels, uint8_t r, uint8_t g, uint8_t b);
 }
-
-// линкуем dll если она используется в другом проекте
-#ifndef LBDLL_EXPORTS
-//#pragma comment(lib, "lbdll.lib")
-#endif // LBDLL_EXPORTS
