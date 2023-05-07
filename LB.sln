@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lbregistry", "lbregistry\lb
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "app1", "app1\app1.vcxproj", "{8C432FE2-C3D3-46DB-A51C-833BC0A7792D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stb_image_lib", "stb_image_lib\stb_image_lib.vcxproj", "{10762AAC-2FEB-4D36-A246-A1E6A779F9AC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,14 @@ Global
 		{8C432FE2-C3D3-46DB-A51C-833BC0A7792D}.Release|x64.Build.0 = Release|x64
 		{8C432FE2-C3D3-46DB-A51C-833BC0A7792D}.Release|x86.ActiveCfg = Release|Win32
 		{8C432FE2-C3D3-46DB-A51C-833BC0A7792D}.Release|x86.Build.0 = Release|Win32
+		{10762AAC-2FEB-4D36-A246-A1E6A779F9AC}.Debug|x64.ActiveCfg = Debug|x64
+		{10762AAC-2FEB-4D36-A246-A1E6A779F9AC}.Debug|x64.Build.0 = Debug|x64
+		{10762AAC-2FEB-4D36-A246-A1E6A779F9AC}.Debug|x86.ActiveCfg = Debug|Win32
+		{10762AAC-2FEB-4D36-A246-A1E6A779F9AC}.Debug|x86.Build.0 = Debug|Win32
+		{10762AAC-2FEB-4D36-A246-A1E6A779F9AC}.Release|x64.ActiveCfg = Release|x64
+		{10762AAC-2FEB-4D36-A246-A1E6A779F9AC}.Release|x64.Build.0 = Release|x64
+		{10762AAC-2FEB-4D36-A246-A1E6A779F9AC}.Release|x86.ActiveCfg = Release|Win32
+		{10762AAC-2FEB-4D36-A246-A1E6A779F9AC}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

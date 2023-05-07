@@ -1,0 +1,2 @@
+replace stbi_imp.cpp with static lib stb_image_lib.lib
+remove shared/ with just project> Add> Reference to lbdll/stb_image_lib etc

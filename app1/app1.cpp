@@ -3,6 +3,7 @@
 
 #include "framework.h"
 #include "app1.h"
+#include "../shared/stb_image.h"
 
 #define MAX_LOADSTRING 100
 
