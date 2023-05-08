@@ -1,15 +1,8 @@
-﻿// app1.cpp : Defines the entry point for the application.
+﻿// app2.cpp : Defines the entry point for the application.
 //
 
 #include "framework.h"
-#include "app1.h"
-
-// include GDI+
-#include <objidl.h>
-#include <gdiplus.h>
-
-
-#include "../stb_image_lib/stb_image.h"
+#include "app2.h"
 
 #define MAX_LOADSTRING 100
 
@@ -24,17 +17,6 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
-using namespace Gdiplus;
-
-int width1, height1, channels1;
-unsigned char* data1;
-int width2, height2, channels2;
-unsigned char* data2;
-// Создание GDI+ Bitmap объектов для каждого изображения
-Bitmap* bmp1;
-Bitmap* bmp2;
-
-
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -44,29 +26,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: Place code here.
-    // Инициализация GDI+
-
-
-    ULONG_PTR gdiplusToken;
-    GdiplusStartupInput gdiplusStartupInput;
-    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
-
-    // Загрузка изображений с помощью stb_image
-    // Пока что только одно изображение
-    // Так же предполагается что оно находится в папке билда
-    data1 = stbi_load("D:\\files\\testimg.jpg", &width1, &height1, &channels1, 0);
-
-	data2 = stbi_load("D:\\files\\testimg.jpg", &width2, &height2, &channels2, 0);
-
-    // Создание GDI+ Bitmap объектов для каждого изображения
-    bmp1 = new Bitmap(width1, height1, width1 * channels1, PixelFormat32bppRGB, (BYTE*)data1);
-    bmp2 = new Bitmap(width2, height2, width2 * channels2, PixelFormat32bppRGB, (BYTE*)data2);
-
-    // todo assert pointers are not null
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_APP1, szWindowClass, MAX_LOADSTRING);
+    LoadStringW(hInstance, IDC_APP2, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
@@ -75,7 +38,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_APP1));
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_APP2));
 
     MSG msg;
 
@@ -89,12 +52,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
-    delete bmp1;
-    delete bmp2;
-    stbi_image_free(data1);
-    stbi_image_free(data2);
-
-    Gdiplus::GdiplusShutdown(gdiplusToken);
     return (int) msg.wParam;
 }
 
@@ -116,10 +73,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APP1));
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APP2));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_APP1);
+    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_APP2);
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -168,27 +125,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
-    case WM_CREATE:
-	    {
-        HWND hwndButton = CreateWindow(
-            L"BUTTON",  // Predefined class; Unicode assumed 
-            L"push",      // Button text 
-            WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,  // Styles 
-            20,         // x position 
-            height1 + 30,         // y position 
-            100,        // Button width
-            100,        // Button height
-            hWnd,     // Parent window
-            (HMENU)ID_LB_PUSH_BUTTON, // Unique ID for the button
-            (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
-            NULL);      // Pointer not needed.
-	    }
-        break;
-
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
-            int wmEvent = HIWORD(wParam);
             // Parse the menu selections:
             switch (wmId)
             {
@@ -197,12 +136,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
             case IDM_EXIT:
                 DestroyWindow(hWnd);
-                break;
-            case ID_LB_PUSH_BUTTON:
-                if (wmEvent == BN_CLICKED)
-                {
-                    MessageBox(hWnd, L"Button clicked!", L"Info", MB_OK);
-                }
                 break;
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
@@ -214,15 +147,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: Add any drawing code that uses hdc here...
-
-            // Создайте объект Graphics
-            Gdiplus::Graphics graphics(hdc);
-
-            // Отрисуйте изображения на окне
-            graphics.DrawImage(bmp1, 0, 0);
-            graphics.DrawImage(bmp2, width1, 0);
-
-
             EndPaint(hWnd, &ps);
         }
         break;
