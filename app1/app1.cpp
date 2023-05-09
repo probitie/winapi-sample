@@ -8,7 +8,7 @@
 #include <objidl.h>
 #include <gdiplus.h>
 
-
+#include "../lbdll/lbdll.h"
 #include "../stb_image_lib/stb_image.h"
 
 #define MAX_LOADSTRING 100
@@ -201,7 +201,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_LB_PUSH_BUTTON:
                 if (wmEvent == BN_CLICKED)
                 {
-                    MessageBox(hWnd, L"Button clicked!", L"Info", MB_OK);
+                    MessageBox(hWnd, L"Button clicked, sending image!", L"Info", MB_OK);
+
+                    send_image(LB_HOST, LB_PORT, data1, width1, height1, channels1);
                 }
                 break;
             default:

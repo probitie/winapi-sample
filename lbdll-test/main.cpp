@@ -3,10 +3,6 @@
 #include <iostream>
 #include <thread>
 
-#define LB_IMG "./testimg.jpg" // in build directory
-
-#define LB_HOST "127.0.0.1"
-#define LB_PORT 8888
 
 #define LB_ASSERT(statement, msg_on_fail) \
 	if (!(statement)) \

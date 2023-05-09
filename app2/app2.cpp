@@ -4,6 +4,43 @@
 #include "framework.h"
 #include "app2.h"
 
+// for receiving images in thread
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
+#include <sstream>
+#include "../lbdll/lbdll.h"
+
+// to block access to cv and atomic image load status
+std::mutex mtx;
+std::condition_variable cv;
+std::atomic<bool> imageDataReady = false;
+
+
+int width1{}, height1{}, channels1{};
+unsigned char *data1{};
+//int width2{}, height2{}, channels2{};
+//unsigned char *data2{};
+
+
+void ImageReceiverThread(HWND hWindow)
+{
+    //
+    data1 = receive_image(LB_PORT, &width1, &height1, &channels1);
+
+    // TODO check if the image received successfully
+    // if (data1 == nullptr) std::abort();
+
+    // first image is ready
+    imageDataReady.store(true);
+
+    // redraw window to display image (WM_PAINT)
+    InvalidateRect(hWindow, NULL, TRUE);
+
+}
+
+
 #define MAX_LOADSTRING 100
 
 // Global Variables:
@@ -42,15 +79,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
+    // start image receiving thread
+    bool bImgStarted = false;
+    std::thread img1Thread;
+
     // Main message loop:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
+        // start image thread
+        if (!bImgStarted)
+        {
+            img1Thread = std::thread(ImageReceiverThread, msg.hwnd);
+            bImgStarted = true;
+        }
+
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
     }
+
+    
+    img1Thread.join();
 
     return (int) msg.wParam;
 }
@@ -121,6 +172,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY  - post a quit message and return
 //
 //
+
+
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
@@ -142,11 +196,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-    case WM_PAINT:
+    case WM_PAINT: // it is called once on the startup as I see
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
+
+            // wait until we receive an obeme.jpg
+            
+            // TODO write Image class and rename snake case to camel case in lbdll
+            // TODO and use namespace | LB is a reserved name already for macro btw
+            // TODO also incapsulate host/port settings 
+            //process_image(data1, width1, height1, channels1,
+            //   [](auto &r, auto &g, auto &b){})
+            if (imageDataReady.load())
+            {
+
+                // change image to black rectangle for testing
+                process_image(data1, width1, height1, channels1,
+                    [](auto& r, auto& g, auto& b) {r = 0; g = 0; b = 0; });
+
+
+                int val = count_colored_pixels(data1, width1, height1, channels1, 0, 0, 0);
+                std::wstringstream out{};
+                out << "result is " << val;
+                MessageBox(hWnd, out.str().c_str(), L"колво точек", MB_OK);
+
+            }
+
             EndPaint(hWnd, &ps);
         }
         break;

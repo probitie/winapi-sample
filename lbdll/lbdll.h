@@ -13,6 +13,11 @@
 #include "stb_image.h"
 
 
+#define LB_IMG "./testimg.jpg" // in build directory
+
+#define LB_HOST "127.0.0.1"
+#define LB_PORT 8888
+
 
 #ifdef LBDLL_EXPORTS
 #define LBDLL_API __declspec(dllexport)
