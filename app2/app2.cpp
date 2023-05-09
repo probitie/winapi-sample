@@ -12,17 +12,24 @@
 #include <sstream>
 #include "../lbdll/lbdll.h"
 
+// include GDI+
+#include <objidl.h>
+#include <gdiplus.h>
+using namespace Gdiplus;
+
 // to block access to cv and atomic image load status
 std::mutex mtx;
 std::condition_variable cv;
 std::atomic<bool> imageDataReady = false;
 
 
+
 int width1{}, height1{}, channels1{};
 unsigned char *data1{};
 //int width2{}, height2{}, channels2{};
 //unsigned char *data2{};
-
+Bitmap* bmp1;
+Bitmap* bmp2;
 
 void ImageReceiverThread(HWND hWindow)
 {
@@ -63,6 +70,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: Place code here.
+    ULONG_PTR gdiplusToken;
+    GdiplusStartupInput gdiplusStartupInput;
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -102,6 +112,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     
     img1Thread.join();
+    GdiplusShutdown(gdiplusToken); // GDI+ Shut up()
 
     return (int) msg.wParam;
 }
@@ -212,14 +223,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
 
                 // change image to black rectangle for testing
-                process_image(data1, width1, height1, channels1,
-                    [](auto& r, auto& g, auto& b) {r = 0; g = 0; b = 0; });
+                //process_image(data1, width1, height1, channels1,
+                //    [](auto& r, auto& g, auto& b) {r = 0; g = 0; b = 0; });
 
+                bmp1 = new Bitmap(width1, height1, width1 * channels1, PixelFormat32bppRGB, (BYTE*)data1);
+                //bmp2 = new Bitmap(width2, height2, width2 * channels2, PixelFormat32bppRGB, (BYTE*)data2);
 
-                int val = count_colored_pixels(data1, width1, height1, channels1, 0, 0, 0);
-                std::wstringstream out{};
-                out << "result is " << val;
-                MessageBox(hWnd, out.str().c_str(), L"колво точек", MB_OK);
+                Gdiplus::Graphics graphics(hdc);
+
+                // Отрисуйте изображения на окне
+                graphics.DrawImage(bmp1, 0, 0);
+                //graphics.DrawImage(bmp2, width1, 0);
+
+                // this code is for test if image receiving worked
+                //int val = count_colored_pixels(data1, width1, height1, channels1, 0, 0, 0);
+                //std::wstringstream out{};
+                //out << "result is " << val;
+                //MessageBox(hWnd, out.str().c_str(), L"колво точек", MB_OK);
 
             }
 
