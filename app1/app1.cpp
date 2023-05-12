@@ -201,9 +201,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_LB_PUSH_BUTTON:
                 if (wmEvent == BN_CLICKED)
                 {
-                    MessageBox(hWnd, L"Button clicked, sending image!", L"Info", MB_OK);
 
                     send_image(LB_HOST, LB_PORT, data1, width1, height1, channels1);
+                    MessageBox(hWnd, L"Button clicked, sending image!", L"Info", MB_OK);
+
                 }
                 break;
             default:
@@ -222,7 +223,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
             // Отрисуйте изображения на окне
             graphics.DrawImage(bmp1, 0, 0);
-            graphics.DrawImage(bmp2, width1, 0);
+            //graphics.DrawImage(bmp2, width1, 0);
 
 
             EndPaint(hWnd, &ps);

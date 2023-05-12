@@ -11,6 +11,7 @@
 #include <condition_variable>
 #include <sstream>
 #include "../lbdll/lbdll.h"
+#include "../stb_image_lib/stb_image.h"
 
 // include GDI+
 #include <objidl.h>
@@ -18,6 +19,10 @@
 using namespace Gdiplus;
 
 // to block access to cv and atomic image load status
+
+// TODO выбрать либо мьютекс либо евент
+// TODO добавить свой логгер (logger.h)
+
 std::mutex mtx;
 std::condition_variable cv;
 std::atomic<bool> imageDataReady = false;
@@ -26,25 +31,81 @@ std::atomic<bool> imageDataReady = false;
 
 int width1{}, height1{}, channels1{};
 unsigned char *data1{};
-//int width2{}, height2{}, channels2{};
-//unsigned char *data2{};
+int width2{}, height2{}, channels2{};
+unsigned char *data2{};
 Bitmap* bmp1;
 Bitmap* bmp2;
 
+
+
+
+
+
+/* TODO
+ * проблема - если в потоке открыть изображение с stb_image - оно корректно отображается на экране
+ * если переслать изображение по сети и сравнить память с загруженым с stb_image - все норм
+ * однако если попробовать переданое по сети нарисовать - оно не рисуется полностью,
+ * оставляя серое пятно на оставшемся его пространстве
+ *
+ *
+ *
+ * еще надо для каждой части лаб создать приложение - тест
+ *
+ * еще, либо Condition Variable либо Мьютекс!
+ *
+ * добавить CreateThread into receiveimage
+ *
+ *
+ *
+ *  проверить правильно ли умножать width*height*channels
+ *
+ * или попробовать передавать битмап
+ *
+ * или вообще весь файл(костыль!)
+ *
+ * или попробовать повызывать функции отдельно без потоков и посмотреть правильно ли результирующее изображение
+ *
+ * или попробовать с бмп(по сути уже написал про это)
+ *
+ */
+
+
+
+
+
 void ImageReceiverThread(HWND hWindow)
 {
-    //
-    data1 = receive_image(LB_PORT, &width1, &height1, &channels1);
+    if(!imageDataReady.load())
+    {
+        
+        //data1 = receive_image(LB_PORT, &width1, &height1, &channels1);
+        //imageDataReady.store(true);
+        // redraw window to display image (WM_PAINT)
 
-    // TODO check if the image received successfully
-    // if (data1 == nullptr) std::abort();
+        // testing result - data1 is identical to data2
+    	//for testing
+            // 2 lines for debug incorrect image display
+        //imageDataReady.store(true);
 
-    // first image is ready
-    imageDataReady.store(true);
+        
 
-    // redraw window to display image (WM_PAINT)
-    InvalidateRect(hWindow, NULL, TRUE);
+        //TODO попробовать скопировать это дело
+        //unsigned char* data_copy_in_thread = new unsigned char[width1 * height1 * channels1];
+        //std::memcpy(data_copy_in_thread, data1, width1 * height1 * channels1);
+        //для теста - вместо получения по сети загрузить с файла
+        //delete[] data1;
 
+        //data1 = data_copy_in_thread;
+
+        //был data2 внизу//
+        //data2 = stbi_load("D:\\files\\testimg.jpg", &width2, &height2, &channels2, 0);
+        // assert loaded and received images are equal
+        //LB_ASSERT(memcmp(data1, data2, width2 * height2) == 0, "sending by localhost failed - resulting image is not equal to the origin");
+
+
+        //RedrawWindow(hWindow, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+
+    }
 }
 
 
@@ -110,7 +171,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
-    
+    delete bmp1;
+    delete bmp2;
+    delete[] data1;
+    delete[] data2;
     img1Thread.join();
     GdiplusShutdown(gdiplusToken); // GDI+ Shut up()
 
@@ -185,7 +249,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 
 
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
@@ -219,20 +282,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // TODO also incapsulate host/port settings 
             //process_image(data1, width1, height1, channels1,
             //   [](auto &r, auto &g, auto &b){})
-            if (imageDataReady.load())
+            if (true)//imageDataReady.load())
             {
-
+              
+                
                 // change image to black rectangle for testing
                 //process_image(data1, width1, height1, channels1,
                 //    [](auto& r, auto& g, auto& b) {r = 0; g = 0; b = 0; });
+                //unsigned char* data1_copy = new unsigned char[width1 * height1 * channels1];
+                //std::memcpy(data1_copy, data1, width1 * height1 * channels1);
+                data1 = receive_image(LB_PORT, &width1, &height1, &channels1);
 
-                bmp1 = new Bitmap(width1, height1, width1 * channels1, PixelFormat32bppRGB, (BYTE*)data1);
-                //bmp2 = new Bitmap(width2, height2, width2 * channels2, PixelFormat32bppRGB, (BYTE*)data2);
+                data2 = stbi_load("D:\\files\\testimg.jpg", &width2, &height2, &channels2, 0);
+				// assert loaded and received images are equal
+				LB_ASSERT(memcmp(data1, data2, width1 * height1 * channels1) == 0, "sending by localhost failed - resulting image is not equal to the origin");
+
+
+            	bmp1 = new Bitmap(width1, height1, width1 * channels1, PixelFormat32bppRGB, (BYTE*)data1);
+            	//bmp2 = new Bitmap(width2, height2, width2 * channels2, PixelFormat32bppRGB, (BYTE*)data2);
 
                 Gdiplus::Graphics graphics(hdc);
 
                 // Отрисуйте изображения на окне
                 graphics.DrawImage(bmp1, 0, 0);
+                //delete[] data1_copy;
                 //graphics.DrawImage(bmp2, width1, 0);
 
                 // this code is for test if image receiving worked

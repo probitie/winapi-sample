@@ -4,13 +4,6 @@
 #include <thread>
 
 
-#define LB_ASSERT(statement, msg_on_fail) \
-	if (!(statement)) \
-	{\
-		std::cout << (msg_on_fail) << "\n";\
-		std::terminate();\
-	}
-
 
 
 int main()
@@ -31,7 +24,7 @@ int main()
 	// (even if it should've been)
 	t1.join();
 
-	LB_ASSERT(memcmp(img, recv_img, w*h) == 0, "sending by localhost failed - resulting image is not equal to the origin");
+	LB_ASSERT(memcmp(img, recv_img, w*h*channels) == 0, "sending by localhost failed - resulting image is not equal to the origin");
 
 
 	// test processing

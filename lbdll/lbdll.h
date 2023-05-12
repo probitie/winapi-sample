@@ -3,6 +3,7 @@
 // image_processing_lib.cpp
 #include <cstdint>
 #include <functional>
+#include <iostream>
 
 // Включаем заголовочный файл WinSocks2 для работы с сокетами
 #include <winsock2.h>
@@ -19,6 +20,14 @@
 #define LB_PORT 8888
 
 
+
+#define LB_ASSERT(statement, msg_on_fail) \
+	if (!(statement)) \
+	{\
+		std::cout << (msg_on_fail) << "\n";\
+		std::terminate();\
+	}
+
 #ifdef LBDLL_EXPORTS
 #define LBDLL_API __declspec(dllexport)
 #else
@@ -28,7 +37,7 @@
 
 // Объявляем функции для импорта из динамической библиотеки
 extern "C" {
-    LBDLL_API bool send_image(const char* ip_address, uint16_t port, const unsigned char* image_data, int width, int height, int channels);
+    LBDLL_API bool send_image(const char* ip_address, uint16_t port, unsigned char* image_data, int width, int height, int channels);
     LBDLL_API unsigned char* receive_image(uint16_t port, int* width, int* height, int* channels);
     LBDLL_API void process_image(unsigned char* image_data, int width, int height, int channels, std::function<void(uint8_t& r, uint8_t& g, uint8_t& b)> process_pixel);
     LBDLL_API int count_colored_pixels(const unsigned char* image_data, int width, int height, int channels, uint8_t r, uint8_t g, uint8_t b);
