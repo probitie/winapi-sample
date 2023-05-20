@@ -1,15 +1,12 @@
 #include "pch.h"
 
-#include <thread>
-
-
 
 /**
- * \brief Отправляет все данные по сокету.
- * \param sock Дескриптор сокета для отправки данных.
- * \param data Указатель на данные для отправки.
- * \param length Длина данных для отправки.
- * \param flags Флаги, определяющие поведение функции отправки.
+ * \brief Sends all data over a socket.
+ * \param sock The socket descriptor for sending data.
+ * \param data Pointer to the data to be sent.
+ * \param length The length of the data to be sent.
+ * \param flags Flags that determine the behavior of the send function.
  */
 void sendAll(SOCKET sock, const char* data, int32_t length, int flags)
 {
@@ -37,10 +34,16 @@ void sendAll(SOCKET sock, const char* data, int32_t length, int flags)
 }
 
 /**
- * \brief Получает все данные по сокету.
- * \param sock Дескриптор сокета для получения данных.
- * \param flags Флаги, определяющие поведение функции получения.
- * \return Указатель на буфер с полученными данными.
+ * \brief Receives all data over a socket.
+ *
+ * \details Attention! It allocates data on HEAP
+ *          also it is blocking function and it guarantees
+ *          that the whole data is received
+ *
+ *
+ * \param sock The socket descriptor for receiving data.
+ * \param flags Flags that determine the behavior of the receive function.
+ * \return Pointer to the buffer containing the received data.
  */
 unsigned char* recvAll(SOCKET sock, int flags)
 {
@@ -74,113 +77,115 @@ unsigned char* recvAll(SOCKET sock, int flags)
 }
 
 /**
- * \brief Отправляет изображение по сокету.
- * \param sock Дескриптор сокета для отправки изображения.
- * \param data Указатель на данные изображения.
- * \param width Ширина изображения.
- * \param height Высота изображения.
- * \param channels Количество каналов в изображении.
+ * \brief Sends an image over a socket.
+ * \param sock The socket descriptor for sending the image.
+ * \param data Pointer to the image data.
+ * \param width The width of the image.
+ * \param height The height of the image.
+ * \param channels The number of channels in the image.
  */
 void sendImg(SOCKET sock, uint8_t* data, int width, int height, int channels)
 {
     int dimensions[3] = { width, height, channels };
-    sendAll(sock, reinterpret_cast<char*>(dimensions), sizeof(dimensions), 0);
 
-    // Отправка данных изображения
+	// send image parameters - size and channels number
+	sendAll(sock, reinterpret_cast<char*>(dimensions), sizeof(dimensions), 0);
+
+    // send the image
     sendAll(sock, reinterpret_cast<char*>(data), width * height * channels, 0);
 }
+
+
 /**
- * \brief Получает изображение по сокету.
- * \param sock Дескриптор сокета для получения изображения.
- * \param data Указатель, по которому будет записан указатель на полученные данные изображения.
- * \param width Указатель, по которому будет записана ширина изображения.
- * \param height Указатель, по которому будет записана высота изображения.
- * \param channels Указатель, по которому будет записано количество каналов в изображении.
+ * \brief Receives an image over a socket.
+ * \param sock The socket descriptor for receiving the image.
+ * \param data Pointer where the pointer to the received image data will be stored.
+ * \param width Pointer where the width of the image will be stored.
+ * \param height Pointer where the height of the image will be stored.
+ * \param channels Pointer where the number of channels in the image will be stored.
  */
 void recvImg(SOCKET sock, uint8_t** data, int* width, int* height, int* channels)
 {
-    // Получение размеров изображения
+    // Obtaining the dimensions of the image
     int* dimensions = reinterpret_cast<int*>(recvAll(sock, 0));
     *width = dimensions[0];
     *height = dimensions[1];
     *channels = dimensions[2];
-    delete[] dimensions;  // не забудьте освободить память!
+    delete[] dimensions; // recvAll allocates memory
 
-    // Получение данных изображения
     *data = recvAll(sock, 0);
 }
 
 bool send_image(const char* ip_address, uint16_t port, unsigned char* image_data, int width, int height, int channels) {
-    // Инициализация Winsock
-    WSADATA wsa_data;
+
+    // init winsock
+	WSADATA wsa_data;
     if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
         return false;
     }
 
-    // Создание сокета
+    // create tcp socket with Ipv4 address family
     SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == INVALID_SOCKET) {
         WSACleanup();
         return false;
     }
 
-    // Настройка адреса и порта
+    // address and port
     sockaddr_in server_address;
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
     inet_pton(AF_INET, ip_address, &server_address.sin_addr);
 
-    // Подключение к серверу
+    // establish connection
     if (connect(sock, (sockaddr*)&server_address, sizeof(server_address)) == SOCKET_ERROR) {
         closesocket(sock);
         WSACleanup();
         return false;
     }
 
-    // Отправка изображения
     sendImg(sock, image_data, width, height, channels);
 
-    // Закрытие сокета и выход
+    // clean up
     closesocket(sock);
     WSACleanup();
     return true;
 }
 
 unsigned char* receive_image(uint16_t port, int* width, int* height, int* channels) {
-    // Инициализация Winsock
-    WSADATA wsa_data;
+    // init winsock
+	WSADATA wsa_data;
     if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
         return nullptr;
     }
 
-    // Создание сокета
+    // init socket
     SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == INVALID_SOCKET) {
         WSACleanup();
         return nullptr;
     }
 
-    // Настройка адреса и порта
+    // address and port
     sockaddr_in server_address;
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
     server_address.sin_addr.s_addr = INADDR_ANY;
 
-    // Привязка сокета к адресу и порту
+    // listen
+
     if (bind(sock, (sockaddr*)&server_address, sizeof(server_address)) == SOCKET_ERROR) {
         closesocket(sock);
         WSACleanup();
         return nullptr;
     }
 
-    // Прослушивание входящих соединений
     if (listen(sock, 1) == SOCKET_ERROR) {
         closesocket(sock);
         WSACleanup();
         return nullptr;
     }
 
-    // Принятие входящего соединения
     SOCKET client_socket;
     sockaddr_in client_address;
     int client_address_length = sizeof(client_address);
@@ -191,21 +196,16 @@ unsigned char* receive_image(uint16_t port, int* width, int* height, int* channe
         return nullptr;
     }
 
-    // Получение изображения
+    // receive image
     unsigned char* image_data;
     recvImg(client_socket, &image_data, width, height, channels);
 
-    // Закрытие сокетов и выход
+    // clean up
     closesocket(client_socket);
     closesocket(sock);
     WSACleanup();
     return image_data;
 }
-
-
-
-// TODO сделать все отдельным классом чтобы можно было узнавать статус отправки через std::thread
-
 
 void process_image(unsigned char* image_data, int width, int height, int channels, std::function<void(uint8_t& r, uint8_t& g, uint8_t& b)> process_pixel) {
     // Проходим по всем пикселям изображения
