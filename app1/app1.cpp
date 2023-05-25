@@ -8,8 +8,22 @@
 #include <objidl.h>
 #include <gdiplus.h>
 
+#include <sstream>
+
 #include "../lbdll/lbdll.h"
 #include "../stb_image_lib/stb_image.h"
+#include "../lbregistry_static/registry_module.h"
+#include "../lbregistry_static/tray_module.h"
+
+
+
+
+static bool hook_ctrlPressed = false;
+static bool hook_altPressed = false;
+
+LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+#define KEY "key"
+
 
 #define MAX_LOADSTRING 100
 
@@ -34,6 +48,7 @@ unsigned char* data2;
 Bitmap* bmp1;
 Bitmap* bmp2;
 
+HWND ghWnd = nullptr; // will be initialized with first message in WinMain
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -46,6 +61,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // TODO: Place code here.
     // Инициализация GDI+
 
+    HHOOK hHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, NULL, 0);
 
     ULONG_PTR gdiplusToken;
     GdiplusStartupInput gdiplusStartupInput;
@@ -79,6 +95,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
+    // this block of code is before the loop in purpose of
+    // reducing branching/ assignment operations
+    // as here ghWnd is initialized
+    GetMessage(&msg, nullptr, 0, 0);
+    ghWnd = msg.hwnd;
+    
+    if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+
     // Main message loop:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -88,6 +117,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             DispatchMessage(&msg);
         }
     }
+    UnhookWindowsHookEx(hHook);
 
     delete bmp1;
     delete bmp2;
@@ -95,6 +125,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     stbi_image_free(data2);
 
     Gdiplus::GdiplusShutdown(gdiplusToken);
+
     return (int) msg.wParam;
 }
 
@@ -166,10 +197,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    //TrayWndProc(hWnd, message, wParam, lParam); // i need it only if it handles clicks or whatever
+
     switch (message)
     {
     case WM_CREATE:
 	    {
+        TrayAddIcon(hWnd);
         HWND hwndButton = CreateWindow(
             L"BUTTON",  // Predefined class; Unicode assumed 
             L"push",      // Button text 
@@ -257,3 +291,55 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return (INT_PTR)FALSE;
 }
+
+LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (nCode == HC_ACTION) {
+        PKBDLLHOOKSTRUCT p = (PKBDLLHOOKSTRUCT)lParam;
+        switch (wParam) {
+        case WM_KEYDOWN:
+        case WM_SYSKEYDOWN:
+            if (hook_ctrlPressed && p->vkCode == 'Y') {
+                std::wstringstream msg;
+                uint32_t val;
+
+                msg << "Key: " << KEY << "; ";
+                if (ReadUnsignedIntFromRegistry(KEY, val))
+                {
+                    msg << "value: " << val;
+                }
+                else
+                {
+                    msg << "Error: there are no values";
+                }
+
+                MessageBox(ghWnd, msg.str().c_str(), L"Registry", MB_OK);
+
+                //hook_ctrlPressed = false;
+            }
+            else if (hook_altPressed && p->vkCode == 'R') {
+                if (DeleteFromRegistry(KEY))
+                    MessageBox(ghWnd, L"Deleted successfully", L"Registry", MB_OK);
+
+                else
+                    MessageBox(ghWnd, L"Can not delete the value, it might be already deleted",
+                        L"Registry", MB_OK);
+
+
+                //hook_altPressed = false;
+            }
+
+            else if (p->vkCode == VK_LCONTROL) hook_ctrlPressed = true;
+            else if (p->vkCode == VK_LMENU) hook_altPressed = true;
+
+            break;
+        case WM_KEYUP:
+        case WM_SYSKEYUP:
+            if (p->vkCode == VK_CONTROL) hook_ctrlPressed = false;
+            else if (p->vkCode == VK_MENU) hook_altPressed = false;
+            break;
+        }
+    }
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
+

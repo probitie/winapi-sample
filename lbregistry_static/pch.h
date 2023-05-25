@@ -8,14 +8,9 @@
 #define PCH_H
 
 // add headers that you want to pre-compile here
-
-// #define NOMINMAX // disable min/max for using numeric limits
-#include <Windows.h>
-#include <tchar.h>
-#include <shellapi.h>
-#include <iostream>
 #include <string>
-#include <sstream>
+#include <Windows.h>
 
+#include "framework.h"
 
 #endif //PCH_H
