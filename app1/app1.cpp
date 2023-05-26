@@ -22,7 +22,6 @@ static bool hook_ctrlPressed = false;
 static bool hook_altPressed = false;
 
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
-#define KEY "key"
 
 
 #define MAX_LOADSTRING 100
@@ -302,30 +301,42 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 std::wstringstream msg;
                 uint32_t val;
 
-                msg << "Key: " << KEY << "; ";
-                if (ReadUnsignedIntFromRegistry(KEY, val))
+                msg << "key 1: " << LB_REG_KEY1 << "; ";
+
+                if (ReadUnsignedIntFromRegistry(LB_REG_KEY1, val))
                 {
                     msg << "value: " << val;
                 }
                 else
                 {
-                    msg << "Error: there are no values";
+                    msg << "Error: there is no value";
+                }
+
+                msg << "\nkey 2: " << LB_REG_KEY2 << "; ";
+
+                if (ReadUnsignedIntFromRegistry(LB_REG_KEY2, val))
+                {
+                    msg << "value: " << val;
+                }
+                else
+                {
+                    msg << "Error: there is no value";
                 }
 
                 MessageBox(ghWnd, msg.str().c_str(), L"Registry", MB_OK);
 
-                //hook_ctrlPressed = false;
+                hook_ctrlPressed = false;
             }
             else if (hook_altPressed && p->vkCode == 'R') {
-                if (DeleteFromRegistry(KEY))
+                if (DeleteFromRegistry(LB_REG_KEY1) && DeleteFromRegistry(LB_REG_KEY2))
                     MessageBox(ghWnd, L"Deleted successfully", L"Registry", MB_OK);
 
                 else
-                    MessageBox(ghWnd, L"Can not delete the value, it might be already deleted",
+                    MessageBox(ghWnd, L"Can not delete the values, they might be already deleted",
                         L"Registry", MB_OK);
 
 
-                //hook_altPressed = false;
+                hook_altPressed = false;
             }
 
             else if (p->vkCode == VK_LCONTROL) hook_ctrlPressed = true;

@@ -37,7 +37,6 @@
 #endif
 
 
-// TODO use struct Image instead of passing data, h, w, channels separately
 extern "C" {
 
 	// TODO use remove_cv and pass image as const

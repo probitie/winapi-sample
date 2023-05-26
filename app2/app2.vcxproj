@@ -147,6 +147,9 @@
     <ProjectReference Include="..\lbdll\lbdll.vcxproj">
       <Project>{86c00503-153f-4149-9b7d-833f3c451697}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\lbregistry_static\lbregistry_static.vcxproj">
+      <Project>{6866d740-d03c-4909-b318-5a7f06c76087}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\stb_image_lib\stb_image_lib.vcxproj">
       <Project>{10762aac-2feb-4d36-a246-a1e6a779f9ac}</Project>
     </ProjectReference>
