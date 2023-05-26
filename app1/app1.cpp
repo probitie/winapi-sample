@@ -40,9 +40,10 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 using namespace Gdiplus;
 
 int width1, height1, channels1;
-unsigned char* data1;
+unsigned char* data1, *data1_to_send;
 int width2, height2, channels2;
-unsigned char* data2;
+unsigned char* data2, *data2_to_send;
+
 // Создание GDI+ Bitmap объектов для каждого изображения
 Bitmap* bmp1;
 Bitmap* bmp2;
@@ -70,14 +71,41 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // Пока что только одно изображение
     // Так же предполагается что оно находится в папке билда
     data1 = stbi_load("D:\\files\\testimg.jpg", &width1, &height1, &channels1, 0);
+    int data1_size = width1 * height1 * channels1;
+	data1_to_send = new unsigned char[data1_size];
+    memcpy_s(data1_to_send, data1_size, data1, data1_size);
+    process_image(data1_to_send, width1, height1, channels1,
+        [](uint8_t& r, uint8_t& g, uint8_t& b)
+        {
+            r += 10;
+            g += 10;
+            b += 10;
+        }
+    );
+
+
 
 	data2 = stbi_load("D:\\files\\testimg.jpg", &width2, &height2, &channels2, 0);
+    int data2_size = width2 * height2 * channels2;
+    data2_to_send = new unsigned char[data2_size];
+    memcpy_s(data2_to_send, data2_size, data2, data2_size);
+
+	process_image(data2_to_send, width2, height2, channels2,
+        [](uint8_t& r, uint8_t& g, uint8_t& b)
+        {
+            r *= 1.2;
+            g *= 1.2;
+            b *= 1.2;
+        }
+    );
+
+
+    LB_ASSERT(data1 != nullptr && data2 != nullptr, "can't load image")
 
     // Создание GDI+ Bitmap объектов для каждого изображения
     bmp1 = new Bitmap(width1, height1, width1 * channels1, PixelFormat32bppRGB, (BYTE*)data1);
     bmp2 = new Bitmap(width2, height2, width2 * channels2, PixelFormat32bppRGB, (BYTE*)data2);
-
-    // todo assert pointers are not null
+    
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -122,6 +150,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     delete bmp2;
     stbi_image_free(data1);
     stbi_image_free(data2);
+
+    delete data1_to_send;
+    delete data2_to_send;
 
     Gdiplus::GdiplusShutdown(gdiplusToken);
 
@@ -234,8 +265,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_LB_PUSH_BUTTON:
                 if (wmEvent == BN_CLICKED)
                 {
-
-                    send_image(LB_HOST, LB_PORT, data1, width1, height1, channels1);
+                    // Todo make them async
+                    send_image(LB_HOST, LB_PORT1, data1_to_send, width1, height1, channels1);
+                    send_image(LB_HOST, LB_PORT2, data2_to_send, width2, height2, channels2);
                     MessageBox(hWnd, L"Button clicked, sending image!", L"Info", MB_OK);
 
                 }
@@ -249,14 +281,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
 
             // Создайте объект Graphics
             Gdiplus::Graphics graphics(hdc);
 
             // Отрисуйте изображения на окне
             graphics.DrawImage(bmp1, 0, 0);
-            //graphics.DrawImage(bmp2, width1, 0);
+            graphics.DrawImage(bmp2, width1, 0);
 
 
             EndPaint(hWnd, &ps);

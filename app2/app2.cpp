@@ -30,17 +30,8 @@ Bitmap* bmp2;
 void ImageReceiverThread1(HWND hWindow)
 {
     
-    data1 = receive_image(LB_PORT, &width1, &height1, &channels1);
+    data1 = receive_image(LB_PORT1, &width1, &height1, &channels1);
 
-    // TODO move to app1 this and from the second thread
-    process_image(data1, width1, height1, channels1,
-        [](uint8_t& r, uint8_t& g, uint8_t& b)
-        {
-            r += 10;
-            g += 10;
-            b += 10;
-        }
-    );
 
     const int white_count = count_colored_pixels(data1, width1, height1, channels1, 255, 255, 255);
     WriteUnsignedIntToRegistry(LB_REG_KEY1, white_count);
@@ -53,16 +44,7 @@ void ImageReceiverThread1(HWND hWindow)
 void ImageReceiverThread2(HWND hWindow)
 {
 
-    data2 = receive_image(LB_PORT, &width2, &height2, &channels2);
-    process_image(data2, width2, height2, channels2,
-        [](uint8_t& r, uint8_t& g, uint8_t& b)
-        {
-            r *= 1.2;
-            g *= 1.2;
-            b *= 1.2;
-        }
-    );
-
+    data2 = receive_image(LB_PORT2, &width2, &height2, &channels2);
     const int black_count = count_colored_pixels(data2, width2, height2, channels2, 0, 0, 0);
     WriteUnsignedIntToRegistry(LB_REG_KEY2, black_count);
 
@@ -112,11 +94,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MSG msg;
 
     // start image receiving thread
-    std::thread img1Thread;
-
+    
     // this block of code is before the loop in purpose of
     // reducing branching/ assignment operations
-	// TODO it would be suitable to use __builtings_expect(isThreadStarted, 0)
+	// TODO it would be suitable to use like __builtin_expect(isThreadStarted, 0) in gcc
 
     GetMessage(&msg, nullptr, 0, 0);
 
@@ -127,8 +108,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
 
-	img1Thread = std::thread(ImageReceiverThread1, msg.hwnd);
-    // img2Thread = std::thread(ImageReceiverThread2, msg.hwnd);
+    std::thread img1Thread = std::thread(ImageReceiverThread1, msg.hwnd);
+    std::thread img2Thread = std::thread(ImageReceiverThread2, msg.hwnd);
 
     // Main message loop:
     while (GetMessage(&msg, nullptr, 0, 0))
@@ -254,7 +235,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if (data2)
             {
                 bmp2 = new Bitmap(width2, height2, width2 * channels2, PixelFormat32bppRGB, (BYTE*)data2);
-            	graphics.DrawImage(bmp2, width1, 0);
+            	graphics.DrawImage(bmp2, 400, 0);
             }
 
             EndPaint(hWnd, &ps);

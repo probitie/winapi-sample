@@ -15,10 +15,10 @@ int main()
 	// test sending
 
 	// run sending in separate thread but receive in current
-	std::thread t1{ send_image, LB_HOST, LB_PORT, img, w, h, channels };
+	std::thread t1{ send_image, LB_HOST, LB_PORT1, img, w, h, channels };
 
 	int r_h{}, r_w{}, r_channels{}; // r_ means received
-	auto recv_img = receive_image(LB_PORT, &r_w, &r_h, &r_channels);
+	auto recv_img = receive_image(LB_PORT1, &r_w, &r_h, &r_channels);
 
 	// wait until the thread closes
 	// (even if it should've been)

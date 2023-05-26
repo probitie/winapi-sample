@@ -20,7 +20,9 @@
 #define LB_IMG "./testimg.jpg" // in build directory
 
 #define LB_HOST "127.0.0.1" //
-#define LB_PORT 8888	// port for sending image
+#define LB_PORT1 8888	// port for sending image
+#define LB_PORT2 8889	// port for sending image
+
 
 
 #define LB_ASSERT(statement, msg_on_fail) \
