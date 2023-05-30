@@ -68,8 +68,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
 
     // Загрузка изображений с помощью stb_image
-    // Пока что только одно изображение
-    // Так же предполагается что оно находится в папке билда
+    // Так же предполагается что ищ находится в папке билда
     data1 = stbi_load("D:\\files\\testimg.jpg", &width1, &height1, &channels1, 0);
     int data1_size = width1 * height1 * channels1;
 	data1_to_send = new unsigned char[data1_size];
@@ -82,7 +81,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             b += 10;
         }
     );
-
 
 
 	data2 = stbi_load("D:\\files\\testimg.jpg", &width2, &height2, &channels2, 0);

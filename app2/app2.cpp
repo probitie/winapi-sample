@@ -36,22 +36,16 @@ void ImageReceiverThread1(HWND hWindow)
     const int white_count = count_colored_pixels(data1, width1, height1, channels1, 255, 255, 255);
     WriteUnsignedIntToRegistry(LB_REG_KEY1, white_count);
 
+    data2 = receive_image(LB_PORT2, &width2, &height2, &channels2);
+    const int black_count = count_colored_pixels(data2, width2, height2, channels2, 0, 0, 0);
+    WriteUnsignedIntToRegistry(LB_REG_KEY2, black_count);
+
+
 	// redraw window to display image (WM_PAINT)
     RedrawWindow(hWindow, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 }
 
-void ImageReceiverThread2(HWND hWindow)
-{
-
-    data2 = receive_image(LB_PORT2, &width2, &height2, &channels2);
-    const int black_count = count_colored_pixels(data2, width2, height2, channels2, 0, 0, 0);
-    WriteUnsignedIntToRegistry(LB_REG_KEY2, black_count);
-
-    // redraw window to display image (WM_PAINT)
-    RedrawWindow(hWindow, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-
-}
 #define MAX_LOADSTRING 100
 
 // Global Variables:
@@ -109,7 +103,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
     std::thread img1Thread = std::thread(ImageReceiverThread1, msg.hwnd);
-    std::thread img2Thread = std::thread(ImageReceiverThread2, msg.hwnd);
 
     // Main message loop:
     while (GetMessage(&msg, nullptr, 0, 0))
