@@ -33,7 +33,7 @@ void ImageReceiverThread1(HWND hWindow)
     data1 = receive_image(LB_PORT1, &width1, &height1, &channels1);
 
 
-    const int white_count = count_colored_pixels(data1, width1, height1, channels1, 255, 255, 255);
+    const int white_count = count_colored_pixels(data1, width1, height1, channels1, 141, 134, 126);
     WriteUnsignedIntToRegistry(LB_REG_KEY1, white_count);
 
     data2 = receive_image(LB_PORT2, &width2, &height2, &channels2);

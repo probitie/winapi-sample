@@ -101,7 +101,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     data2_to_send = new unsigned char[data2_size];
     memcpy_s(data2_to_send, data2_size, data2, data2_size);
 
-    /*
+    
 	process_image(data2_to_send, width2, height2, 4,
         [](uint8_t& r, uint8_t& g, uint8_t& b)
         {
@@ -109,7 +109,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             g *= 1.2;
             b *= 1.2;
         }
-    );*/
+    );
 
 
     LB_ASSERT(data1 != nullptr && data2 != nullptr, "can't load image")
