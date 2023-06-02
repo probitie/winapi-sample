@@ -207,22 +207,28 @@ unsigned char* receive_image(uint16_t port, int* width, int* height, int* channe
     return image_data;
 }
 
+// Функция обработки каждого пикселя изображения
+// process_pixel - это функция, которая принимает по ссылке компоненты R, G, B каждого пикселя.
 void process_image(unsigned char* image_data, int width, int height, int channels, std::function<void(uint8_t& r, uint8_t& g, uint8_t& b)> process_pixel) {
-    // go through each pixel
-	for (int i = 0; i < width * height * channels; i += channels) {
-        // Invoking a lambda function to process each pixel, passing the R, G, and B components by reference
-        process_pixel(image_data[i], image_data[i + 1], image_data[i + 2]);
+    // Проходим через каждый пиксель
+    for (int i = 0; i < width * height * channels; i += channels) {
+        // Вызываем функцию process_pixel, передавая в нее компоненты B, G, R каждого пикселя (формат BGRA)
+        process_pixel(image_data[i + 2], image_data[i + 1], image_data[i]);
     }
 }
 
+// Функция подсчета пикселей определенного цвета на изображении
+// r, g, b - это компоненты цвета, который нужно найти.
 int count_colored_pixels(const unsigned char* image_data, int width, int height, int channels, uint8_t r, uint8_t g, uint8_t b) {
     int count = 0;
-    // go through each pixel
+    // Проходим через каждый пиксель
     for (int i = 0; i < width * height * channels; i += channels) {
-        // If the pixel color matches the specified color, increment the counter
-        if (image_data[i] == r && image_data[i + 1] == g && image_data[i + 2] == b) {
+        // Если цвет пикселя соответствует заданному цвету, увеличиваем счетчик
+        // Здесь мы сравниваем компоненты B, G, R каждого пикселя с заданными значениями r, g, b (формат BGRA)
+        if (image_data[i + 2] == r && image_data[i + 1] == g && image_data[i] == b) {
             count++;
         }
     }
     return count;
 }
+

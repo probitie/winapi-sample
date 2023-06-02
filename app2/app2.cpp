@@ -222,12 +222,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
             if (data1)
             {
-                bmp1 = new Bitmap(width1, height1, width1 * channels1, PixelFormat32bppRGB, (BYTE*)data1);
+                bmp1 = new Bitmap(width1, height1, width1 * 4, PixelFormat32bppARGB, (BYTE*)data1);
                 graphics.DrawImage(bmp1, 0, 0);
             }
             if (data2)
             {
-                bmp2 = new Bitmap(width2, height2, width2 * channels2, PixelFormat32bppRGB, (BYTE*)data2);
+                bmp2 = new Bitmap(width2, height2, width2 * 4, PixelFormat32bppARGB, (BYTE*)data2);
             	graphics.DrawImage(bmp2, 400, 0);
             }
 

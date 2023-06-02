@@ -50,6 +50,15 @@ Bitmap* bmp2;
 
 HWND ghWnd = nullptr; // will be initialized with first message in WinMain
 
+void swapRB(unsigned char* data, int width, int height) {
+    for (int i = 0; i < width * height * 4; i += 4) {
+        unsigned char tmp = data[i];
+        data[i] = data[i + 2];
+        data[i + 2] = tmp;
+    }
+}
+
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -69,8 +78,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // Загрузка изображений с помощью stb_image
     // Так же предполагается что ищ находится в папке билда
-    data1 = stbi_load("D:\\files\\testimg.jpg", &width1, &height1, &channels1, 0);
-    int data1_size = width1 * height1 * channels1;
+    data1 = stbi_load("D:\\files\\testimg.jpg", &width1, &height1, &channels1, 4);
+    swapRB(data1, width1, height1);
+
+	int data1_size = width1 * height1 * channels1;
 	data1_to_send = new unsigned char[data1_size];
     memcpy_s(data1_to_send, data1_size, data1, data1_size);
     process_image(data1_to_send, width1, height1, channels1,
@@ -83,8 +94,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     );
 
 
-	data2 = stbi_load("D:\\files\\testimg.jpg", &width2, &height2, &channels2, 0);
-    int data2_size = width2 * height2 * channels2;
+	data2 = stbi_load("D:\\files\\testimg.jpg", &width2, &height2, &channels2, 4);
+    swapRB(data2, width2, height2);
+
+	int data2_size = width2 * height2 * channels2;
     data2_to_send = new unsigned char[data2_size];
     memcpy_s(data2_to_send, data2_size, data2, data2_size);
 
@@ -100,9 +113,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     LB_ASSERT(data1 != nullptr && data2 != nullptr, "can't load image")
 
+
+        
     // Создание GDI+ Bitmap объектов для каждого изображения
-    bmp1 = new Bitmap(width1, height1, width1 * channels1, PixelFormat32bppRGB, (BYTE*)data1);
-    bmp2 = new Bitmap(width2, height2, width2 * channels2, PixelFormat32bppRGB, (BYTE*)data2);
+        bmp1 = new Bitmap(width1, height1, width1 * 4, PixelFormat32bppARGB, (BYTE*)data1);
+
+	bmp2 = new Bitmap(width2, height2, width2 * 4, PixelFormat32bppARGB, (BYTE*)data2);
     
 
     // Initialize global strings
