@@ -86,7 +86,7 @@ unsigned char* recvAll(SOCKET sock, int flags)
  */
 void sendImg(SOCKET sock, uint8_t* data, int width, int height, int channels)
 {
-    int dimensions[3] = { width, height, channels };
+    int dimensions[3] = { width, height, channels};
 
 	// send image parameters - size and channels number
 	sendAll(sock, reinterpret_cast<char*>(dimensions), sizeof(dimensions), 0);

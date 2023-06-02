@@ -84,14 +84,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	int data1_size = width1 * height1 * channels1;
 	data1_to_send = new unsigned char[data1_size];
     memcpy_s(data1_to_send, data1_size, data1, data1_size);
-    process_image(data1_to_send, width1, height1, channels1,
+   /* process_image(data1_to_send, width1, height1, channels1,
         [](uint8_t& r, uint8_t& g, uint8_t& b)
         {
             r += 10;
             g += 10;
             b += 10;
         }
-    );
+    );*/
 
 
 	data2 = stbi_load("D:\\files\\testimg.jpg", &width2, &height2, &channels2, 4);
@@ -101,6 +101,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     data2_to_send = new unsigned char[data2_size];
     memcpy_s(data2_to_send, data2_size, data2, data2_size);
 
+    /*
 	process_image(data2_to_send, width2, height2, channels2,
         [](uint8_t& r, uint8_t& g, uint8_t& b)
         {
@@ -108,7 +109,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             g *= 1.2;
             b *= 1.2;
         }
-    );
+    );*/
 
 
     LB_ASSERT(data1 != nullptr && data2 != nullptr, "can't load image")
@@ -279,9 +280,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_LB_PUSH_BUTTON:
                 if (wmEvent == BN_CLICKED)
                 {
-                    // Todo make them async
-                    send_image(LB_HOST, LB_PORT1, data1_to_send, width1, height1, channels1);
-                    send_image(LB_HOST, LB_PORT2, data2_to_send, width2, height2, channels2);
+                    // Todo replace with data1_to_send
+                    send_image(LB_HOST, LB_PORT1, data1, width1, height1, 4);
+                    send_image(LB_HOST, LB_PORT2, data2, width2, height2, 4);
                     MessageBox(hWnd, L"Button clicked, sending image!", L"Info", MB_OK);
 
                 }
